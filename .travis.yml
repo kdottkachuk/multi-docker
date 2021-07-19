@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t konstantainer/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true konstantainer/react-test npm test
+
+after_success:
+  - docker build -t konstantainer/umulty-client ./client
+  - docker build -t konstantainer/umulty-nginx ./client
+  - docker build -t konstantainer/umulty-server ./client
+  - docker build -t konstantainer/umulty-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push konstantainer/umulty-client
+  - docker push konstantainer/umulty-nginx
+  - docker push konstantainer/umulty-server
+  - docker push konstantainer/umulty-worker
